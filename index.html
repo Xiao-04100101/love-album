@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我们的时光</title>
+<meta name="description" content="记录我们在一起的点点滴滴">
+<meta property="og:title" content="我们的时光">
+<meta property="og:description" content="记录我们在一起的点点滴滴">
+<meta property="og:type" content="website">
+<meta property="og:image" content="photos/01.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #fef9f4;
+  --blush: #fdf2f7;
+  --rose: #e91e63;
+  --coral: #ff6b81;
+  --gold: #c9a87c;
+  --text: #3d2c2e;
+  --text-light: #8d6e73;
+  --white: #ffffff;
+  --card-bg: rgba(255,255,255,0.65);
+  --overlay: rgba(30, 10, 15, 0.55);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: "Noto Serif SC", "STSong", "Songti SC", "SimSun", serif;
+  background: linear-gradient(175deg, var(--cream) 0%, var(--blush) 40%, #fef5f7 100%);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 纹理叠加 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ── Canvas 爱心粒子 ── */
+#hearts-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Hero 封面区 ── */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px) brightness(0.45);
+  transform: scale(1.1);
+  transition: background-image 1.5s ease;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 2rem;
+}
+
+.hero-title {
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 300;
+  color: var(--white);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+  animation: fadeInUp 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.06em;
+  animation: fadeInUp 1.2s 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.3);
+}
+
+.hero-divider {
+  width: 60px;
+  height: 1px;
+  background: var(--gold);
+  margin: 1.5rem auto;
+  animation: fadeInUp 1.2s 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  animation: bounceDown 2s ease-in-out infinite, fadeInUp 1.2s 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-scroll span {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-right: 1.5px solid rgba(255,255,255,0.7);
+  border-bottom: 1.5px solid rgba(255,255,255,0.7);
+  transform: rotate(45deg);
+}
+
+/* ── 纪念日计数器 ── */
+.counter-section {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 5rem 2rem;
+}
+
+.counter-label {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text-light);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.counter-number {
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: clamp(3.5rem, 8vw, 6rem);
+  font-weight: 300;
+  color: var(--rose);
+  letter-spacing: 0.04em;
+  transition: all 0.3s ease;
+}
+
+.counter-unit {
+  font-size: 1.4rem;
+  color: var(--text-light);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+}
+
+.counter-date {
+  margin-top: 0.8rem;
+  font-size: 0.95rem;
+  color: var(--text-light);
+  letter-spacing: 0.05em;
+}
+
+/* ── 相册画廊 ── */
+.gallery-section {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 6rem;
+}
+
+.gallery-title {
+  text-align: center;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-light);
+  letter-spacing: 0.06em;
+  margin-bottom: 3rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  gap: 1rem;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 0.4s ease;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.gallery-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.gallery-item:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.14);
+  z-index: 3;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.gallery-item:hover img {
+  transform: scale(1.08);
+}
+
+/* 错落布局：不同卡片占不同行数 */
+.gallery-item:nth-child(1) { grid-row: span 2; }
+.gallery-item:nth-child(2) { grid-row: span 1; }
+.gallery-item:nth-child(3) { grid-row: span 2; }
+.gallery-item:nth-child(4) { grid-row: span 1; }
+.gallery-item:nth-child(5) { grid-row: span 1; }
+.gallery-item:nth-child(6) { grid-row: span 2; }
+.gallery-item:nth-child(7) { grid-row: span 1; }
+.gallery-item:nth-child(8) { grid-row: span 2; }
+.gallery-item:nth-child(9) { grid-row: span 1; }
+.gallery-item:nth-child(10) { grid-row: span 2; }
+
+.gallery-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.25) 0%, transparent 40%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.gallery-item:hover::after {
+  opacity: 1;
+}
+
+/* ── Lightbox 灯箱 ── */
+.lightbox {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.92);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.lightbox.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  transform: scale(0.9);
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lightbox.active .lightbox-img {
+  transform: scale(1);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 44px; height: 44px;
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 1.6rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+  z-index: 2;
+}
+
+.lightbox-close:hover { background: rgba(255,255,255,0.25); }
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px; height: 48px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 1.4rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+  z-index: 2;
+}
+
+.lightbox-nav:hover { background: rgba(255,255,255,0.25); }
+.lightbox-prev { left: 1rem; }
+.lightbox-next { right: 1rem; }
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  z-index: 2;
+}
+
+/* ── 音乐按钮 ── */
+.music-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 124, 0.4);
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: var(--gold);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: all 0.35s ease;
+}
+
+.music-toggle:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 20px rgba(201, 168, 124, 0.25);
+}
+
+.music-toggle.playing {
+  background: rgba(233, 30, 99, 0.08);
+  border-color: var(--rose);
+  color: var(--rose);
+  animation: musicPulse 2s ease-in-out infinite;
+}
+
+/* ── Footer ── */
+.footer {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 3rem 2rem 5rem;
+}
+
+.footer-text {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text-light);
+  letter-spacing: 0.06em;
+}
+
+.footer-heart {
+  display: inline-block;
+  color: var(--rose);
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* ── 动画关键帧 ── */
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(10px); }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15%      { transform: scale(1.2); }
+  30%      { transform: scale(1); }
+  45%      { transform: scale(1.15); }
+  60%      { transform: scale(1); }
+}
+
+@keyframes musicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.25); }
+  50%      { box-shadow: 0 0 0 12px rgba(233, 30, 99, 0); }
+}
+
+/* ── 响应式 ── */
+@media (max-width: 1024px) {
+  .gallery-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 180px;
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 160px;
+    gap: 0.6rem;
+  }
+
+  .gallery-item:nth-child(1),
+  .gallery-item:nth-child(3),
+  .gallery-item:nth-child(6),
+  .gallery-item:nth-child(8),
+  .gallery-item:nth-child(10) {
+    grid-row: span 1;
+  }
+
+  .gallery-item:nth-child(odd) {
+    grid-row: span 1;
+  }
+
+  .counter-section { padding: 3.5rem 1.5rem; }
+
+  .lightbox-nav { width: 40px; height: 40px; }
+  .lightbox-prev { left: 0.5rem; }
+  .lightbox-next { right: 0.5rem; }
+
+  .music-toggle { bottom: 1.5rem; right: 1.5rem; width: 44px; height: 44px; font-size: 1.1rem; }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 140px;
+    gap: 0.5rem;
+  }
+
+  .gallery-item { border-radius: 8px; }
+  .gallery-item::after { border-radius: 8px; }
+
+  .hero-title { letter-spacing: 0.04em; }
+  .footer-text { font-size: 1.3rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- 爱心粒子 Canvas -->
+<canvas id="hearts-canvas"></canvas>
+
+<!-- Hero 封面 -->
+<section class="hero" id="hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">我们的时光</h1>
+    <div class="hero-divider"></div>
+    <p class="hero-subtitle">Every moment with you is a treasure</p>
+  </div>
+  <div class="hero-scroll">
+    <span></span>
+  </div>
+</section>
+
+<!-- 纪念日计数器 -->
+<section class="counter-section" id="counter">
+  <p class="counter-label">Since We Fell In Love</p>
+  <div>
+    <span class="counter-number" id="days-count">0</span>
+  </div>
+  <span class="counter-unit">天</span>
+  <p class="counter-date">2026.01.01 — 直到永远</p>
+</section>
+
+<!-- 相册 -->
+<section class="gallery-section" id="gallery">
+  <h2 class="gallery-title">Our Memories</h2>
+  <div class="gallery-grid" id="gallery-grid">
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <p class="footer-text">Forever <span class="footer-heart">&</span> Always <span class="footer-heart">❤</span></p>
+</footer>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close" aria-label="关闭">✕</button>
+  <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="上一张">‹</button>
+  <img class="lightbox-img" id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="下一张">›</button>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+</div>
+
+<!-- 音乐按钮 -->
+<button class="music-toggle" id="music-toggle" aria-label="音乐播放" title="播放音乐">♪</button>
+
+<script>
+(function() {
+  // ── 照片数量 ──
+  const photoCount = 10;
+  const photos = Array.from({length: photoCount}, (_, i) => `photos/${String(i+1).padStart(2,'0')}.jpg`);
+
+  // ── Hero 背景：随机选一张 ──
+  const heroBg = document.getElementById('hero-bg');
+  const randomPhoto = photos[Math.floor(Math.random() * photos.length)];
+  heroBg.style.backgroundImage = `url(${randomPhoto})`;
+
+  // ── 纪念日计数器 ──
+  const startDate = new Date('2026-01-01T00:00:00');
+  const daysEl = document.getElementById('days-count');
+
+  function updateCounter() {
+    const now = new Date();
+    const diff = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    daysEl.textContent = diff >= 0 ? diff : 0;
+  }
+  updateCounter();
+  // 每天凌晨刷新（以及刚加载时）
+  setInterval(updateCounter, 1000 * 60 * 60);
+
+  // ── 生成画廊 ──
+  const galleryGrid = document.getElementById('gallery-grid');
+  photos.forEach((src, i) => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = `<img src="${src}" alt="我们的照片 ${i+1}" loading="lazy">`;
+    item.addEventListener('click', () => openLightbox(i));
+    galleryGrid.appendChild(item);
+  });
+
+  // ── Intersection Observer: 滚动淡入 ──
+  const galleryItems = document.querySelectorAll('.gallery-item');
+  const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -30px 0px' };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, idx) => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        // 递增延迟，制造依次出现的效果
+        const delay = Array.from(galleryItems).indexOf(el) * 80;
+        el.style.transitionDelay = delay + 'ms';
+        el.classList.add('visible');
+        observer.unobserve(el);
+      }
+    });
+  }, observerOptions);
+
+  galleryItems.forEach(item => observer.observe(item));
+
+  // ── Lightbox 灯箱 ──
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxCounter = document.getElementById('lightbox-counter');
+  let currentIndex = 0;
+
+  function openLightbox(index) {
+    currentIndex = index;
+    lightboxImg.src = photos[currentIndex];
+    lightboxCounter.textContent = `${currentIndex + 1} / ${photoCount}`;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function nextPhoto() {
+    currentIndex = (currentIndex + 1) % photoCount;
+    lightboxImg.src = photos[currentIndex];
+    lightboxCounter.textContent = `${currentIndex + 1} / ${photoCount}`;
+  }
+
+  function prevPhoto() {
+    currentIndex = (currentIndex - 1 + photoCount) % photoCount;
+    lightboxImg.src = photos[currentIndex];
+    lightboxCounter.textContent = `${currentIndex + 1} / ${photoCount}`;
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox-next').addEventListener('click', nextPhoto);
+  document.getElementById('lightbox-prev').addEventListener('click', prevPhoto);
+
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  // 键盘导航
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') nextPhoto();
+    if (e.key === 'ArrowLeft') prevPhoto();
+  });
+
+  // 触摸滑动
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  lightbox.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, {passive: true});
+
+  lightbox.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) nextPhoto();
+      else prevPhoto();
+    }
+  });
+
+  // ── 背景音乐 ──
+  const musicToggle = document.getElementById('music-toggle');
+  const audio = new Audio('黄伊汶 - 自己.mp3');
+  audio.loop = true;
+  audio.volume = 0.6;
+  let isPlaying = false;
+
+  musicToggle.addEventListener('click', () => {
+    if (isPlaying) {
+      audio.pause();
+      musicToggle.classList.remove('playing');
+      musicToggle.textContent = '♪';
+      musicToggle.title = '播放音乐';
+    } else {
+      audio.play().then(() => {
+        musicToggle.classList.add('playing');
+        musicToggle.textContent = '♫';
+        musicToggle.title = '暂停音乐';
+      }).catch(err => {
+        // 浏览器可能阻止自动播放
+        console.log('音乐播放需要用户交互:', err);
+      });
+    }
+    isPlaying = !isPlaying;
+  });
+
+  // ── Canvas 爱心粒子系统 ──
+  const canvas = document.getElementById('hearts-canvas');
+  const ctx = canvas.getContext('2d');
+  let hearts = [];
+  let animationId;
+
+  const isMobile = window.innerWidth < 768;
+  const maxHearts = isMobile ? 35 : 70;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // 绘制爱心路径
+  function drawHeart(ctx, x, y, size) {
+    const s = size * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y + s * 0.3);
+    // 左半边
+    ctx.bezierCurveTo(x, y, x - s, y, x - s, y + s * 0.3);
+    ctx.bezierCurveTo(x - s, y + s * 0.65, x, y + s * 0.9, x, y + s);
+    // 右半边
+    ctx.bezierCurveTo(x, y + s * 0.9, x + s, y + s * 0.65, x + s, y + s * 0.3);
+    ctx.bezierCurveTo(x + s, y, x, y, x, y + s * 0.3);
+    ctx.closePath();
+  }
+
+  function createHeart() {
+    const size = 8 + Math.random() * 18;
+    return {
+      x: Math.random() * canvas.width,
+      y: canvas.height + size,
+      size: size,
+      speed: 0.4 + Math.random() * 1.2,
+      drift: (Math.random() - 0.5) * 0.6,
+      opacity: 0.15 + Math.random() * 0.45,
+      color: Math.random() < 0.5 ? '233, 30, 99' : '255, 107, 129', // rose or coral
+      rotation: (Math.random() - 0.5) * 0.5
+    };
+  }
+
+  // 初始化粒子
+  for (let i = 0; i < maxHearts; i++) {
+    const h = createHeart();
+    h.y = Math.random() * canvas.height; // 分散在画面各处
+    hearts.push(h);
+  }
+
+  function animateHearts() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    hearts.forEach(h => {
+      ctx.save();
+      ctx.globalAlpha = h.opacity;
+      ctx.fillStyle = `rgba(${h.color}, ${h.opacity})`;
+      ctx.translate(h.x, h.y);
+      ctx.rotate(h.rotation);
+      drawHeart(ctx, 0, 0, h.size);
+      ctx.fill();
+      ctx.restore();
+
+      // 移动
+      h.y -= h.speed;
+      h.x += h.drift;
+
+      // 重置到画布底部
+      if (h.y < -h.size * 2) {
+        h.y = canvas.height + h.size;
+        h.x = Math.random() * canvas.width;
+      }
+
+      // 水平边界循环
+      if (h.x > canvas.width + h.size) h.x = -h.size;
+      if (h.x < -h.size) h.x = canvas.width + h.size;
+    });
+
+    animationId = requestAnimationFrame(animateHearts);
+  }
+
+  animateHearts();
+
+  // 页面不可见时暂停动画以节省资源
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(animationId);
+    } else {
+      animateHearts();
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
