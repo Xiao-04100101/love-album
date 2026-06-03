@@ -14,7 +14,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;600&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
-<script src="https://imgcache.qq.com/qcloud/tcbjs/2.0.0/tcb.js"></script>
 <style>
 :root {
   --cream: #fef9f4;
@@ -459,20 +458,7 @@ body::before {
 
 <script>
 (function() {
-  // ── CloudBase 初始化 ──
-  let db = null;
-  let dbReady = false;
-
-  try {
-    const tcbApp = tcb.init({ env: 'xiao-d2gofr0nc8a242bb8' });
-    db = tcbApp.database();
-    tcbApp.auth({ persistence: 'local' }).anonymousAuthProvider().signIn()
-      .then(() => { dbReady = true; console.log('CloudBase 已连接'); loadBucketList(); })
-      .catch(err => { console.warn('CloudBase 连接失败，愿望清单使用本地存储:', err.message); loadBucketListLocal(); });
-  } catch(e) {
-    console.warn('CloudBase 未加载，愿望清单使用本地存储');
-    loadBucketListLocal();
-  }
+          loadBucketListLocal();
 
   // ── 照片 ──
   const photoCount = 12;
@@ -655,10 +641,8 @@ body::before {
     else { quizIcon.textContent = '💕'; quizMsg.textContent = '看来需要多花点时间了解彼此呢～'; }
     quizScoreEl.textContent = `${quizScore} / ${total}`;
 
-    // 存到 CloudBase
-    if (dbReady) {
-      try { db.collection('quiz_records').add({ player: 'ta', score: quizScore, total, time: new Date().toISOString() }); } catch(e) {}
-    }
+    // 保存成绩到本地
+    try { const records = JSON.parse(localStorage.getItem('quiz_records') || '[]'); records.push({ player: 'ta', score: quizScore, total, time: new Date().toISOString() }); localStorage.setItem('quiz_records', JSON.stringify(records)); } catch(e) {}
   }
 
   document.getElementById('quiz-restart').addEventListener('click', startQuiz);
@@ -797,22 +781,6 @@ body::before {
   let showAllBucket = true;
 
   function loadBucketList() {
-    if (!dbReady) { loadBucketListLocal(); return; }
-    db.collection('bucket_list').get().then(res => {
-      if (res.data && res.data.length > 0) {
-        bucketItems = res.data.map(d => ({ id: d._id, text: d.text, done: d.done || false, doneAt: d.doneAt, doneBy: d.doneBy }));
-      } else {
-        // 初始化默认列表
-        bucketItems = defaultBucketItems.map((t, i) => ({ id: 'init_'+i, text: t, done: false }));
-        bucketItems.forEach(item => {
-          db.collection('bucket_list').add({ text: item.text, done: false, doneAt: null, doneBy: null });
-        });
-      }
-      renderBucketList();
-    }).catch(() => { loadBucketListLocal(); });
-  }
-
-  function loadBucketListLocal() {
     try {
       const stored = JSON.parse(localStorage.getItem('bucket_list_2026'));
       bucketItems = stored || defaultBucketItems.map((t,i)=>({id:'local_'+i,text:t,done:false,doneAt:null,doneBy:null}));
@@ -829,11 +797,7 @@ body::before {
   function toggleBucketItem(item) {
     item.done = !item.done;
     item.doneAt = item.done ? new Date().toISOString() : null;
-    if (dbReady && !item.id.startsWith('local_') && !item.id.startsWith('init_')) {
-      db.collection('bucket_list').doc(item.id).update({ done: item.done, doneAt: item.doneAt });
-    } else {
-      saveBucketLocal();
-    }
+          saveBucketLocal();
     renderBucketList();
   }
 
@@ -911,8 +875,8 @@ body::before {
 
   // ── 音乐 ──
   const musicToggle = document.getElementById('music-toggle');
-  const audio = new Audio('bgm.mp3');
-  audio.loop=true; audio.volume=0.6; let isPlaying=false;
+  const audio = new Audio('黄伊汶 - 自己.mp3');
+  audio.preload='none'; audio.loop=true; audio.volume=0.6; let isPlaying=false;
   const progressRing=document.getElementById('music-progress-ring'), progressFg=document.getElementById('music-progress-fg'), musicTime=document.getElementById('music-time');
   const circ=2*Math.PI*16;
   function fmtTime(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return `${m}:${String(sec).padStart(2,'0')}`;}
